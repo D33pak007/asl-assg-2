@@ -1,0 +1,13 @@
+
+📊 Correlation Matrix:
+          Nino3.4       DMI           PC1           PC2
+Nino3.4  1.000000  0.317198  4.051939e-01  1.904926e-01
+DMI      0.317198  1.000000  3.940840e-01  4.597117e-01
+PC1      0.405194  0.394084  1.000000e+00  1.111446e-16
+PC2      0.190493  0.459712  1.111446e-16  1.000000e+00
+
+🔁 Correlation between Nino3.4 and DMI: 0.317
+🔁 Correlation between Nino3.4 and EOF1 (PC1): 0.405
+🔁 Correlation between Nino3.4 and EOF2 (PC2): 0.190
+🔁 Correlation between DMI and EOF1 (PC1): 0.394
+🔁 Correlation between DMI and EOF2 (PC2): 0.460

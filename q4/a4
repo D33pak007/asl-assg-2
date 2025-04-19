@@ -1,0 +1,31 @@
+EOF1 explains 49.34% of the variance
+EOF2 explains 8.73% of the variance
+Question 3 completed: EOF analysis following paper methodology.
+
+Detailed Methodology for EOF Analysis:
+
+1. Data Preparation:
+   - Selected SST data over the Indian Ocean domain (40°E-120°E, 30°S-30°N)
+   - Computed monthly climatology (1950-2023)
+   - Calculated monthly anomalies by removing the climatological seasonal cycle
+
+2. Area Weighting:
+   - Applied cosine latitude weighting to account for decreasing grid cell area with increasing latitude
+   - This ensures that grid points are weighted according to the area they represent
+
+3. EOF Analysis:
+   - Used Empirical Orthogonal Function (EOF) analysis to decompose the SST anomaly field into spatial patterns (EOFs) and time series (PCs)
+   - EOF analysis finds the patterns that explain the maximum variance in the data
+   - Each EOF pattern is associated with a Principal Component (PC) time series
+   - The EOF patterns are orthogonal (uncorrelated) to each other
+
+4. Interpretation:
+   - EOF1 represents the dominant mode of variability in the Indian Ocean SST
+   - EOF2 represents the second most important mode of variability
+   - The PC time series show how the strength and sign of these patterns evolve over time
+   - The variance explained by each EOF indicates its relative importance in explaining the total variability
+
+5. Visualization:
+   - Plotted the spatial patterns of EOF1 and EOF2
+   - Plotted the corresponding PC time series
+   - Included the percentage of variance explained by each mode
