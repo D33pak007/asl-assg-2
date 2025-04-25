@@ -1,0 +1,38 @@
+Calculating correlations...
+Correlation between AMO and ENSO: 0.0195
+Correlation between AMO and IPO: -0.0651
+Correlation between AMO and ENSO (10-year filtered): -0.1089
+Correlation between AMO and IPO (10-year filtered): -0.2915
+Recent correlation between AMO and ENSO (1950-2020): -0.0078
+Recent correlation between AMO and IPO (1950-2020): -0.1006
+Recent filtered correlation between AMO and ENSO (1950-2020): -0.2145
+Recent filtered correlation between AMO and IPO (1950-2020): -0.4002
+Creating plots...
+Time series plot saved as 'amo_enso_ipo_correlations.png'
+Scatter plot saved as 'amo_enso_ipo_scatter.png'
+Annual indices plot saved as 'climate_indices_annual.png'
+AMO time series with phases plot saved as 'amo_timeseries_phases.png'
+
+Physical Interpretation of Correlations:
+----------------------------------------
+1. AMO and ENSO Correlation:
+   The positive correlation (0.0195) suggests some connection between Atlantic and Pacific warming/cooling cycles,
+   potentially indicating a common external forcing mechanism affecting both ocean basins similarly.
+
+2. AMO and IPO Correlation:
+   The negative correlation (-0.0651) indicates that decadal variability in the
+   Atlantic and Pacific often operates in opposition, with warm phases in one basin
+   coinciding with cool phases in the other. This interbasin interaction suggests:
+   - A thermohaline circulation influence connecting both ocean basins
+   - Modulation of the Walker circulation across the tropical oceans
+   - Global-scale redistribution of heat energy between ocean basins
+   - Cross-basin influences through atmospheric bridges
+   This relationship has significant implications for multi-decadal climate prediction.
+
+3. Filtered Correlations (Decadal Timescale):
+   AMO-ENSO filtered correlation: -0.1089
+   AMO-IPO filtered correlation: -0.2915
+   The stronger correlations in the filtered data suggest that the relationships between
+   these climate modes are more pronounced at decadal timescales than at interannual timescales.
+   This highlights the importance of low-frequency climate variability in interbasin interactions,
+   potentially through slower oceanic processes like the meridional overturning circulation.

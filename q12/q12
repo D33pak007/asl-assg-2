@@ -1,0 +1,19 @@
+Applying 10-year running mean filter...
+
+Calculating correlations...
+
+Correlation matrix for original indices:
+          ENSO       IOD       PDO       IPO
+ENSO  1.000000  0.286522  0.420316  0.904493
+IOD   0.286522  1.000000 -0.102214  0.150671
+PDO   0.420316 -0.102214  1.000000  0.624539
+IPO   0.904493  0.150671  0.624539  1.000000
+
+Correlation matrix for 10-year filtered indices:
+               ENSO_filtered  IOD_filtered  PDO_filtered  IPO_filtered
+ENSO_filtered       1.000000      0.274594      0.499033      0.707756
+IOD_filtered        0.274594      1.000000     -0.286077     -0.330005
+PDO_filtered        0.499033     -0.286077      1.000000      0.752694
+IPO_filtered        0.707756     -0.330005      0.752694      1.000000
+
+Filtered data saved to 'climate_indices_10yr_filtered.csv'

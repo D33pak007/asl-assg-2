@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import requests
 from io import StringIO
 import re
-from scipy import signal
 
 # Set plotting parameters for better readability
 plt.rcParams['figure.figsize'] = (12, 8)
@@ -262,185 +261,141 @@ except Exception as e:
                          columns=['IPO'])
     ipo_df['IPO'] = np.nan
 
-# 5. Apply the filtering method for question 12
-# For low pass filter (>8 years), we'll use 97 months (~8 years)
-def apply_lowpass_filter(series, cutoff=97):
-    """Apply low-pass filter to keep periods > 8 years."""
+# 5. Apply 10-year running mean filter (121 months) as in the first code
+def apply_running_mean(series, window=121):  # 121 months = ~10 years
+    """Apply running mean to filter the time series."""
     # Check if series has data before filtering
     if series.isna().all():
         return series
-    return series.rolling(window=cutoff, center=True).mean()
+    return series.rolling(window=window, center=True).mean()
 
-# For high pass filter (<8 years), we'll subtract the low-pass from the original
-def apply_highpass_filter(series, lowpass):
-    """Apply high-pass filter to keep periods < 8 years."""
-    # Check if series has data before filtering
-    if series.isna().all() or lowpass.isna().all():
-        return series
-    return series - lowpass
+# Apply filters to all indices
+print("\nApplying 10-year running mean filter...")
 
-# Check if data is available before proceeding
+# Apply filter to ENSO data
 if not enso_df['ENSO'].isna().all():
-    # Apply filters to ENSO (Nino 3.4) data
-    enso_lowpass = apply_lowpass_filter(enso_df['ENSO'])
-    enso_highpass = apply_highpass_filter(enso_df['ENSO'], enso_lowpass)
+    enso_filtered = apply_running_mean(enso_df['ENSO'])
 else:
-    # Create empty series if no data
-    enso_lowpass = pd.Series(np.nan, index=enso_df.index)
-    enso_highpass = pd.Series(np.nan, index=enso_df.index)
+    enso_filtered = pd.Series(np.nan, index=enso_df.index)
 
+# Apply filter to IOD data
 if not iod_df['IOD'].isna().all():
-    # Apply filters to IOD/DMI data
-    iod_lowpass = apply_lowpass_filter(iod_df['IOD'])
-    iod_highpass = apply_highpass_filter(iod_df['IOD'], iod_lowpass)
+    iod_filtered = apply_running_mean(iod_df['IOD'])
 else:
-    # Create empty series if no data
-    iod_lowpass = pd.Series(np.nan, index=iod_df.index)
-    iod_highpass = pd.Series(np.nan, index=iod_df.index)
+    iod_filtered = pd.Series(np.nan, index=iod_df.index)
 
+# Apply filter to PDO data
 if not pdo_df['PDO'].isna().all():
-    # Apply filters to PDO data
-    pdo_lowpass = apply_lowpass_filter(pdo_df['PDO'])
-    pdo_highpass = apply_highpass_filter(pdo_df['PDO'], pdo_lowpass)
+    pdo_filtered = apply_running_mean(pdo_df['PDO'])
 else:
-    # Create empty series if no data
-    pdo_lowpass = pd.Series(np.nan, index=pdo_df.index)
-    pdo_highpass = pd.Series(np.nan, index=pdo_df.index)
+    pdo_filtered = pd.Series(np.nan, index=pdo_df.index)
 
+# Apply filter to IPO data
 if not ipo_df['IPO'].isna().all():
-    # Apply filters to IPO data
-    ipo_lowpass = apply_lowpass_filter(ipo_df['IPO'])
-    ipo_highpass = apply_highpass_filter(ipo_df['IPO'], ipo_lowpass)
+    ipo_filtered = apply_running_mean(ipo_df['IPO'])
 else:
-    # Create empty series if no data
-    ipo_lowpass = pd.Series(np.nan, index=ipo_df.index)
-    ipo_highpass = pd.Series(np.nan, index=ipo_df.index)
+    ipo_filtered = pd.Series(np.nan, index=ipo_df.index)
 
-# 6. Calculate correlations between filtered data
-# Combine all the filtered data
-combined_df = pd.DataFrame({
-    'ENSO_lowpass': enso_lowpass,
-    'IOD_lowpass': iod_lowpass,
-    'PDO_lowpass': pdo_lowpass,
-    'IPO_lowpass': ipo_lowpass,
-    'ENSO_highpass': enso_highpass,
-    'IOD_highpass': iod_highpass,
-    'PDO_highpass': pdo_highpass,
-    'IPO_highpass': ipo_highpass
-})
+# 6. Calculate correlations between time series
+print("\nCalculating correlations...")
 
-# Calculate correlations between filtered indices
-# Remove NaN values first
-combined_filtered_df = combined_df.dropna()
+# Create a dictionary to store all original and filtered series
+all_series = {
+    'ENSO': enso_df['ENSO'] if 'ENSO' in enso_df else pd.Series(),
+    'IOD': iod_df['IOD'] if 'IOD' in iod_df else pd.Series(),
+    'PDO': pdo_df['PDO'] if 'PDO' in pdo_df else pd.Series(),
+    'IPO': ipo_df['IPO'] if 'IPO' in ipo_df else pd.Series(),
+    'ENSO_filtered': enso_filtered,
+    'IOD_filtered': iod_filtered,
+    'PDO_filtered': pdo_filtered,
+    'IPO_filtered': ipo_filtered
+}
 
-# Only calculate correlations if we have data
-if not combined_filtered_df.empty:
-    # Calculate correlation matrix for low-pass filtered data
-    lowpass_corr = combined_filtered_df[['ENSO_lowpass', 'IOD_lowpass', 'PDO_lowpass', 'IPO_lowpass']].corr()
-    print("\nCorrelation matrix for low-pass filtered indices (>8 years):")
-    print(lowpass_corr)
+# Create a DataFrame with all series
+all_df = pd.DataFrame(all_series)
 
-    # Calculate correlation matrix for high-pass filtered data
-    highpass_corr = combined_filtered_df[['ENSO_highpass', 'IOD_highpass', 'PDO_highpass', 'IPO_highpass']].corr()
-    print("\nCorrelation matrix for high-pass filtered indices (<8 years):")
-    print(highpass_corr)
+# Calculate correlations for original data
+original_df = all_df[['ENSO', 'IOD', 'PDO', 'IPO']].dropna()
+if not original_df.empty:
+    original_corr = original_df.corr()
+    print("\nCorrelation matrix for original indices:")
+    print(original_corr)
 else:
-    print("\nWarning: Not enough data to calculate correlations after filtering and removing NaNs.")
+    print("\nWarning: Not enough data to calculate correlations for original indices.")
 
-# 7. Create plots to visualize the results (only if we have data)
-plot_data = True
-
-# Check if we have valid data to plot
-if enso_highpass.isna().all() and iod_highpass.isna().all():
-    print("\nWarning: No valid ENSO or IOD data available for plotting.")
-    plot_enso_iod = False
+# Calculate correlations for filtered data
+filtered_df = all_df[['ENSO_filtered', 'IOD_filtered', 'PDO_filtered', 'IPO_filtered']].dropna()
+if not filtered_df.empty:
+    filtered_corr = filtered_df.corr()
+    print("\nCorrelation matrix for 10-year filtered indices:")
+    print(filtered_corr)
 else:
-    plot_enso_iod = True
+    print("\nWarning: Not enough data to calculate correlations for filtered indices.")
 
-if pdo_highpass.isna().all() and ipo_highpass.isna().all():
-    print("\nWarning: No valid PDO or IPO data available for plotting.")
-    plot_pdo_ipo = False
-else:
-    plot_pdo_ipo = True
+# 7. Create plots to visualize the results
+# Plot 1: ENSO and IOD (original and filtered)
+fig, axs = plt.subplots(2, 1, figsize=(14, 10))
 
-# Plot the filtered data if available
-if plot_enso_iod:
-    # Plot the filtered ENSO (Nino 3.4) and IOD data
-    fig, axs = plt.subplots(2, 1, figsize=(14, 10))
+# Plot original time series
+axs[0].plot(enso_df.index, enso_df['ENSO'], 'b-', label='ENSO (Nino 3.4)')
+axs[0].plot(iod_df.index, iod_df['IOD'], 'r-', label='IOD/DMI')
+axs[0].set_title('Original ENSO and IOD Time Series (1900-2023)')
+axs[0].set_xlabel('Year')
+axs[0].set_ylabel('Index Value')
+axs[0].legend()
+axs[0].grid(True)
 
-    # Plot interannual (high-pass) filtered data (<8 years)
-    if not enso_highpass.isna().all():
-        axs[0].plot(enso_df.index, enso_highpass, 'b-', label='ENSO (Nino 3.4)')
-    if not iod_highpass.isna().all():
-        axs[0].plot(iod_df.index, iod_highpass, 'r-', label='IOD/DMI')
-    
-    axs[0].set_title('Interannually Filtered (<8 years) Climate Indices (1900-2023)')
-    axs[0].set_xlabel('Year')
-    axs[0].set_ylabel('Index Value')
-    axs[0].legend()
-    axs[0].grid(True)
+# Plot filtered time series
+axs[1].plot(enso_filtered.index, enso_filtered, 'b-', label='ENSO (10-year running mean)')
+axs[1].plot(iod_filtered.index, iod_filtered, 'r-', label='IOD (10-year running mean)')
+axs[1].set_title('Filtered ENSO and IOD Time Series (1900-2023)')
+axs[1].set_xlabel('Year')
+axs[1].set_ylabel('Index Value')
+axs[1].legend()
+axs[1].grid(True)
 
-    # Plot interdecadal (low-pass) filtered data (>8 years)
-    if not enso_lowpass.isna().all():
-        axs[1].plot(enso_df.index, enso_lowpass, 'b-', label='ENSO (Nino 3.4)')
-    if not iod_lowpass.isna().all():
-        axs[1].plot(iod_df.index, iod_lowpass, 'r-', label='IOD/DMI')
-    
-    axs[1].set_title('Interdecadally Filtered (>8 years) Climate Indices (1900-2023)')
-    axs[1].set_xlabel('Year')
-    axs[1].set_ylabel('Index Value')
-    axs[1].legend()
-    axs[1].grid(True)
+plt.tight_layout()
+plt.savefig('ENSO_IOD_Timeseries.png', dpi=300, bbox_inches='tight')
+plt.show()
 
-    plt.tight_layout()
-    plt.savefig('ENSO_IOD_Filtered.png', dpi=300, bbox_inches='tight')
-    plt.show()
+# Plot 2: PDO and IPO (original and filtered)
+fig, axs = plt.subplots(2, 1, figsize=(14, 10))
 
-if plot_pdo_ipo:
-    # Plot PDO and IPO filtered data
-    fig, axs = plt.subplots(2, 1, figsize=(14, 10))
+# Plot original time series
+axs[0].plot(pdo_df.index, pdo_df['PDO'], 'b-', label='PDO')
+axs[0].plot(ipo_df.index, ipo_df['IPO'], 'r-', label='IPO')
+axs[0].set_title('Original PDO and IPO Time Series (1900-2023)')
+axs[0].set_xlabel('Year')
+axs[0].set_ylabel('Index Value')
+axs[0].legend()
+axs[0].grid(True)
 
-    # Plot interannual (high-pass) filtered data (<8 years)
-    if not pdo_highpass.isna().all():
-        axs[0].plot(pdo_df.index, pdo_highpass, 'b-', label='PDO')
-    if not ipo_highpass.isna().all():
-        axs[0].plot(ipo_df.index, ipo_highpass, 'r-', label='IPO')
-    
-    axs[0].set_title('Interannually Filtered (<8 years) PDO and IPO (1900-2023)')
-    axs[0].set_xlabel('Year')
-    axs[0].set_ylabel('Index Value')
-    axs[0].legend()
-    axs[0].grid(True)
+# Plot filtered time series
+axs[1].plot(pdo_filtered.index, pdo_filtered, 'b-', label='PDO (10-year running mean)')
+axs[1].plot(ipo_filtered.index, ipo_filtered, 'r-', label='IPO (10-year running mean)')
+axs[1].set_title('Filtered PDO and IPO Time Series (1900-2023)')
+axs[1].set_xlabel('Year')
+axs[1].set_ylabel('Index Value')
+axs[1].legend()
+axs[1].grid(True)
 
-    # Plot interdecadal (low-pass) filtered data (>8 years)
-    if not pdo_lowpass.isna().all():
-        axs[1].plot(pdo_df.index, pdo_lowpass, 'b-', label='PDO')
-    if not ipo_lowpass.isna().all():
-        axs[1].plot(ipo_df.index, ipo_lowpass, 'r-', label='IPO')
-    
-    axs[1].set_title('Interdecadally Filtered (>8 years) PDO and IPO (1900-2023)')
-    axs[1].set_xlabel('Year')
-    axs[1].set_ylabel('Index Value')
-    axs[1].legend()
-    axs[1].grid(True)
+plt.tight_layout()
+plt.savefig('PDO_IPO_Timeseries.png', dpi=300, bbox_inches='tight')
+plt.show()
 
-    plt.tight_layout()
-    plt.savefig('PDO_IPO_Filtered.png', dpi=300, bbox_inches='tight')
-    plt.show()
-
-# 8. Save the filtered data
+# 8. Save the filtered data to CSV
 filtered_data = pd.DataFrame({
-    'ENSO_highpass': enso_highpass,
-    'ENSO_lowpass': enso_lowpass,
-    'IOD_highpass': iod_highpass,
-    'IOD_lowpass': iod_lowpass,
-    'PDO_highpass': pdo_highpass,
-    'PDO_lowpass': pdo_lowpass,
-    'IPO_highpass': ipo_highpass,
-    'IPO_lowpass': ipo_lowpass
+    'ENSO': enso_df['ENSO'] if 'ENSO' in enso_df else np.nan,
+    'ENSO_filtered': enso_filtered,
+    'IOD': iod_df['IOD'] if 'IOD' in iod_df else np.nan,
+    'IOD_filtered': iod_filtered,
+    'PDO': pdo_df['PDO'] if 'PDO' in pdo_df else np.nan,
+    'PDO_filtered': pdo_filtered,
+    'IPO': ipo_df['IPO'] if 'IPO' in ipo_df else np.nan,
+    'IPO_filtered': ipo_filtered
 })
 
-filtered_data.to_csv('filtered_climate_indices.csv')
+filtered_data.to_csv('climate_indices_10yr_filtered.csv')
 
-print("\nFiltered data saved to 'filtered_climate_indices.csv'")
+print("\nFiltered data saved to 'climate_indices_10yr_filtered.csv'")
 print("\nTask completed successfully!")
