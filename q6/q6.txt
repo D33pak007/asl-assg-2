@@ -1,0 +1,9 @@
+PC1 Regression Pattern:
+The SST pattern shows the characteristic ENSO signal with warming/cooling
+in the tropical Pacific. The wind vectors reveal the associated changes in
+atmospheric circulation, with weakened trade winds during El Niño phases.
+
+PC2 Regression Pattern:
+The SST pattern likely represents another mode of climate variability such
+as the Pacific Decadal Oscillation (PDO). The wind patterns show how
+atmospheric circulation responds to this mode of variability.
